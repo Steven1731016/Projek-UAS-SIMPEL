@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Pembangkit Listrik Tenaga Surya (PLTS)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        header {
+            background-color: #ff9999;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav {
+            background-color: #ffff99;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .left, .right {
+            background-color: #ccffff;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        footer {
+            background-color: #3399ff;
+            padding: 10px;
+            text-align: center;
+            color: #fff;
+        }
+        .input-container, .output-container {
+            margin-bottom: 20px;
+        }
+        input, .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .team {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .team-member {
+            text-align: center;
+            margin: 10px;
+        }
+        .team-member img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Media Queries untuk tata letak responsif */
+        @media only screen and (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .left, .right, .content {
+                width: 30%;
+            }
+        }
+
+        /* Tema Gelap */
+        body.dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+        body.dark-mode header, body.dark-mode nav, body.dark-mode .left, body.dark-mode .right, body.dark-mode .content, body.dark-mode footer {
+            background-color: #222;
+            color: #fff;
+        }
+
+        /* Gaya untuk output perangkat */
+        .device-output {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .device-on {
+            background-color: #c8e6c9;
+            color: #388e3c;
+        }
+        .device-off {
+            background-color: #ffcdd2;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Simulasi Pembangkit Listrik Tenaga Surya (PLTS)
+    </header>
+    <nav>
+        <a href="anggota.html">Anggota Kelompok 2 PLTS</a>
+        <button onclick="toggleDarkMode()">Toggle Tema</button>
+    </nav>
+    <div class="container">
+        <div class="left">
+            <h2>INPUT</h2>
+            <div class="input-container">
+                <label for="cloudiness">Atur Kegelapan Awan:</label>
+                <input type="range" id="cloudiness" name="cloudiness" min="0" max="100" value="0" class="slider">
+                <p>Intensitas awan adalah: <span id="cloudinessValue">0</span>%</p>
+                <label for="panelCount">Masukkan jumlah panel:</label>
+                <input type="number" id="panelCount" name="panelCount" value="">
+                <label for="panelPower">Masukkan daya yang dihasilkan oleh setiap panel (Watt):</label>
+                <input type="number" id="panelPower" name="panelPower" value="">
+                <label for="sunHours">Masukkan lama panel terkena sinar matahari (jam):</label>
+                <input type="number" id="sunHours" name="sunHours" value="">
+                <label for="batteryCapacity">Masukkan kapasitas baterai (Wh):</label>
+                <input type="number" id="batteryCapacity" name="batteryCapacity" value="">
+                <button onclick="hitung()">Hitung</button>
+                <button onclick="resetForm()">Reset</button>
+
+                <!-- Penambahan tombol ON/OFF untuk perangkat rumah tangga -->
+                <h3>Perangkat Rumah Tangga</h3>
+                <div>
+                    <label>AC: </label>
+                    <button id="acButton" onclick="toggleDevice('ac')">OFF</button>
+                </div>
+                <div>
+                    <label>TV: </label>
+                    <button id="tvButton" onclick="toggleDevice('tv')">OFF</button>
+                </div>
+                <div>
+                    <label>Kipas: </label>
+                    <button id="fanButton" onclick="toggleDevice('fan')">OFF</button>
+                </div>
+                <div>
+                    <label>Kulkas: </label>
+                    <button id="fridgeButton" onclick="toggleDevice('fridge')">OFF</button>
+                </div>
+                <div>
+                    <label>Lampu: </label>
+                    <button id="lightButton" onclick="toggleDevice('light')">OFF</button>
+                </div>
+                <div>
+                    <label>Alat Memasak: </label>
+                    <button id="cookingButton" onclick="toggleDevice('cooking')">OFF</button>
+                </div>
+            </div>
+        </div>
+        <div class="content" id="outputSection" style="display: none;">
+            <h2>OUTPUT</h2>
+            <div class="output-container">
+                <p>Luas keseluruhan panel: <span id="totalArea"></span> m<sup>2</sup></p>
+                <p>Daya yang dihasilkan panel: <span id="totalPower"></span> Watt</p>
+                <p>Energi yang dihasilkan panel: <span id="totalEnergy"></span> Watt</p>
+                <p>Lama pengisian baterai: <span id="chargeTime"></span> kali proses</p>
+                <p>Beban yang harus di tanggung: <span id="load"></span> Wh</p>
+                <p><span id="batteryStatus"></span></p>
+                <p>Perkiraan produksi energi per bulan: <span id="monthlyEnergy"></span> kWh</p>
+                <p>Perkiraan penghematan biaya per bulan: Rp <span id="monthlySavings"></span></p>
+                <div id="deviceOutputs"></div>
+                <button onclick="checkBatteryStatus()">Cek Status Baterai</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2023 Simulasi PLTS
+    </footer>
+
+    <script>
+        const cloudinessSlider = document.getElementById('cloudiness');
+        const cloudinessValue = document.getElementById('cloudinessValue');
+        const outputSection = document.getElementById('outputSection');
+        const hargaPerKWh = 150000; // Harga per kWh
+
+        const devices = {
+            ac: { power: 2000, button: 'acButton' },
+            tv: { power: 100, button: 'tvButton' },
+            fan: { power: 75, button: 'fanButton' },
+            fridge: { power: 150, button: 'fridgeButton' },
+            light: { power: 60, button: 'lightButton' },
+            cooking: { power: 1000, button: 'cookingButton' }
+        };
+
+        cloudinessSlider.oninput = function() {
+            cloudinessValue.textContent = this.value;
+        }
+
+        function hitung() {
+            const cloudiness = parseInt(document.getElementById('cloudiness').value);
+            if (cloudiness > 70) {
+                alert("Peringatan: Awan gelap, proses input tidak dapat dilanjutkan.");
+                return;
+            }
+
+            const panelCount = parseFloat(document.getElementById('panelCount').value);
+            const panelPower = parseFloat(document.getElementById('panelPower').value);
+            const sunHours = parseFloat(document.getElementById('sunHours').value);
+            const batteryCapacity = parseFloat(document.getElementById('batteryCapacity').value);
+
+            const totalArea = panelCount * 1.05;
+            const totalPower = panelCount * panelPower;
+            const totalEnergy = totalPower * sunHours;
+            const chargeTime = batteryCapacity / totalEnergy;
+            const load = totalPower * sunHours;
+            const batteryStatus = batteryCapacity >= load ? "Baterai mampu menampung beban" : "Baterai tidak mampu menampung beban";
+            const monthlyEnergy = totalEnergy * 30 / 1000;
+            const monthlySavings = monthlyEnergy * hargaPerKWh;
+
+            document.getElementById('totalArea').textContent = totalArea.toFixed(2);
+            document.getElementById('totalPower').textContent = totalPower;
+            document.getElementById('totalEnergy').textContent = totalEnergy;
+            document.getElementById('chargeTime').textContent = chargeTime.toFixed(2);
+            document.getElementById('load').textContent = load;
+            document.getElementById('batteryStatus').textContent = batteryStatus;
+            document.getElementById('monthlyEnergy').textContent = monthlyEnergy.toFixed(2);
+            document.getElementById('monthlySavings').textContent = monthlySavings.toFixed(2);
+
+            checkDeviceOutputs(totalPower);
+
+            outputSection.style.display = 'block';
+            outputSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function checkDeviceOutputs(totalPower) {
+            const deviceOutputs = document.getElementById('deviceOutputs');
+            deviceOutputs.innerHTML = '';
+
+            for (const [device, details] of Object.entries(devices)) {
+                const button = document.getElementById(details.button);
+                const deviceOutput = document.createElement('div');
+                deviceOutput.classList.add('device-output');
+
+                if (button.textContent === 'ON' && totalPower >= details.power) {
+                    deviceOutput.classList.add('device-on');
+                    deviceOutput.textContent = `${device.toUpperCase()}: Perangkat berhasil dinyalakan`;
+                    totalPower -= details.power;
+                } else if (button.textContent === 'ON') {
+                    deviceOutput.classList.add('device-off');
+                    deviceOutput.textContent = `${device.toUpperCase()}: Perangkat tidak berhasil dinyalakan`;
+                } else {
+                    deviceOutput.textContent = `${device.toUpperCase()}: Perangkat dimatikan`;
+                }
+
+                deviceOutputs.appendChild(deviceOutput);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('cloudiness').value = 0;
+            cloudinessValue.textContent = 0;
+            document.getElementById('panelCount').value = '';
+            document.getElementById('panelPower').value = '';
+            document.getElementById('sunHours').value = '';
+            document.getElementById('batteryCapacity').value = '';
+            document.getElementById('acButton').textContent = 'OFF';
+            document.getElementById('tvButton').textContent = 'OFF';
+            document.getElementById('fanButton').textContent = 'OFF';
+            document.getElementById('fridgeButton').textContent = 'OFF';
+            document.getElementById('lightButton').textContent = 'OFF';
+            document.getElementById('cookingButton').textContent = 'OFF';
+            outputSection.style.display = 'none';
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleDevice(device) {
+            const button = document.getElementById(devices[device].button);
+            if (button.textContent === 'OFF') {
+                button.textContent = 'ON';
+            } else {
+                button.textContent = 'OFF';
+            }
+        }
+
+        function checkBatteryStatus() {
+            const batteryStatus = document.getElementById('batteryStatus').textContent;
+            alert(batteryStatus);
+        }
+    </script>
+</body>
+</html>
